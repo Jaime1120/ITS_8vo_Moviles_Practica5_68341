@@ -1,35 +1,43 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, ImageBackground, KeyboardAvoidingView, TouchableOpacity, View } from 'react-native';
 import { TextInput, Button, Card, Text, Title } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { MotiView } from 'moti';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { api } from '../services/api';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const router = useRouter();
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmar, setConfirmar] = useState('');
   const [loading, setLoading] = useState(false);
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleLogin = async () => {
-    if (!correo || !password) {
+  const handleRegister = async () => {
+    if (!correo || !password || !confirmar) {
       return alert('Todos los campos son obligatorios');
     }
 
+    if (password !== confirmar) {
+      return alert('Las contraseñas no coinciden');
+    }
+    
     if (!isValidEmail(correo)) {
       return alert('Correo electrónico inválido');
     }
 
+    if (password.length < 8) {
+      return alert('La contraseña debe tener al menos 8 caracteres');
+    }
+
     setLoading(true);
     try {
-      await api.login(correo, password);
-      router.replace('/inicio');
+      await api.register(correo, password);
+      router.replace('/');
     } catch (error) {
-      alert('Usuario o contraseña incorrecto');
+      alert('Error al registrar');
     } finally {
       setLoading(false);
     }
@@ -41,18 +49,18 @@ export default function LoginScreen() {
       <ImageBackground
         source={{ uri: 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1080&q=80' }}
         style={styles.background}
-        blurRadius={3}
+        blurRadius={4}
       >
         <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
           <MotiView
-            from={{ opacity: 0, translateY: 50 }}
+            from={{ opacity: 0, translateY: 60 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'timing', duration: 800 }}
           >
             <Card style={styles.card}>
               <Card.Content>
-                <Title style={styles.title}>Bienvenido</Title>
-                <Text style={styles.subtitle}>Accede a tus notas</Text>
+                <Title style={styles.title}>Crear Cuenta</Title>
+                <Text style={styles.subtitle}>Regístrate para continuar</Text>
 
                 <TextInput
                   label="Correo electrónico"
@@ -71,20 +79,28 @@ export default function LoginScreen() {
                   style={styles.input}
                   left={<TextInput.Icon icon="lock" />}
                 />
+                <TextInput
+                  label="Confirmar contraseña"
+                  value={confirmar}
+                  onChangeText={setConfirmar}
+                  secureTextEntry
+                  style={styles.input}
+                  left={<TextInput.Icon icon="lock-check" />}
+                />
 
                 <Button
                   mode="contained"
-                  onPress={handleLogin}
+                  onPress={handleRegister}
                   loading={loading}
                   disabled={loading}
                   style={styles.button}
                   labelStyle={{ fontWeight: 'bold' }}
                 >
-                  Iniciar sesión
+                  Registrarse
                 </Button>
 
-                <TouchableOpacity onPress={() => router.replace('/register')}>
-                  <Text style={styles.link}>¿No tienes cuenta? <Text style={{ fontWeight: 'bold' }}>Regístrate</Text></Text>
+                <TouchableOpacity onPress={() => router.replace('/')}>
+                  <Text style={styles.link}>¿Ya tienes cuenta? <Text style={{ fontWeight: 'bold' }}>Inicia sesión</Text></Text>
                 </TouchableOpacity>
               </Card.Content>
             </Card>
@@ -113,17 +129,17 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
-    color: '#6200ee',
+    color: '#1e88e5',
     textAlign: 'center',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#555',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   input: {
     marginVertical: 8,
@@ -133,11 +149,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 12,
     paddingVertical: 8,
-    backgroundColor: '#6200ee',
+    backgroundColor: '#1e88e5',
   },
   link: {
     marginTop: 16,
     textAlign: 'center',
-    color: '#6200ee',
+    color: '#1e88e5',
   },
 });
